@@ -1,0 +1,48 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neko Maid Chat</title>
+  <style>
+    body { background-image: url("{{ url_for('static', filename='cat_background.png') }}");; }
+    img { width: 600px; border-radius: 12px; }
+    .chat-box { margin-top: 1em; padding: 1em; border: 1px solid #ccc; background: #fff; border-radius: 8px; max-height: 400px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h2>Chat with your neko maid 💗</h2>
+
+  <img src="{{ url_for('static', filename='neko.png') }}" alt="Neko Maid" />
+  <div class="chat-box" id="chat"></div>
+  <input type="text" id="message" placeholder="Say something..." style="width: 80%;" />
+  <button onclick="send()">Send</button>
+
+  <script>
+    async function send() {
+      const input = document.getElementById("message");
+      const chat = document.getElementById("chat");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      chat.innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+      input.value = "";
+
+      const res = await fetch("/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+
+      const data = await res.json();
+      chat.innerHTML += `<p><strong>Neko:</strong> ${data.response}</p>`;
+
+      if (data.audio) {
+        const audio = document.createElement("audio");
+        audio.src = data.audio;
+        audio.autoplay = true;
+        audio.controls = true;
+        chat.appendChild(audio);
+      }
+    }
+  </script>
+</body>
+</html>
